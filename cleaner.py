@@ -41,3 +41,26 @@ def load_rows(path):
 def write_rows(path, rows):
     with open(path, "w", newline="", encoding="utf-8") as handle:
         csv.writer(handle).writerows(rows)
+
+
+def clean_file(source, destination):
+    """Clean a CSV file and return a small statistics dictionary."""
+    rows = load_rows(source)
+    if not rows:
+        write_rows(destination, [])
+        return {
+            "headers": [],
+            "rows_before": 0,
+            "rows_after": 0,
+            "duplicates_removed": 0,
+        }
+    headers = normalize_headers(rows[0])
+    body = clean_rows(rows[1:])
+    unique = dedupe(body)
+    write_rows(destination, [headers] + unique)
+    return {
+        "headers": headers,
+        "rows_before": len(rows) - 1,
+        "rows_after": len(unique),
+        "duplicates_removed": len(body) - len(unique),
+    }
