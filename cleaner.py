@@ -33,21 +33,23 @@ def dedupe(rows, key=None):
     return result
 
 
-def load_rows(path):
+def load_rows(path, delimiter=","):
     with open(path, newline="", encoding="utf-8") as handle:
-        return list(csv.reader(handle))
+        return list(csv.reader(handle, delimiter=delimiter))
 
 
-def write_rows(path, rows):
+def write_rows(path, rows, delimiter=","):
     with open(path, "w", newline="", encoding="utf-8") as handle:
-        csv.writer(handle).writerows(rows)
+        csv.writer(handle, delimiter=delimiter).writerows(rows)
 
 
-def clean_file(source, destination):
+def clean_file(source, destination, delimiter=",", out_delimiter=None):
     """Clean a CSV file and return a small statistics dictionary."""
-    rows = load_rows(source)
+    if out_delimiter is None:
+        out_delimiter = delimiter
+    rows = load_rows(source, delimiter=delimiter)
     if not rows:
-        write_rows(destination, [])
+        write_rows(destination, [], delimiter=out_delimiter)
         return {
             "headers": [],
             "rows_before": 0,
@@ -57,7 +59,7 @@ def clean_file(source, destination):
     headers = normalize_headers(rows[0])
     body = clean_rows(rows[1:])
     unique = dedupe(body)
-    write_rows(destination, [headers] + unique)
+    write_rows(destination, [headers] + unique, delimiter=out_delimiter)
     return {
         "headers": headers,
         "rows_before": len(rows) - 1,
