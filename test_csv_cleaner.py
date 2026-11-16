@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from cleaner import clean_rows, dedupe, drop_empty_columns, load_rows, normalize_headers, select_columns, write_rows
+from cleaner import clean_rows, dedupe, drop_empty_columns, fill_missing, load_rows, normalize_headers, select_columns, write_rows
 
 
 class CleanerTests(unittest.TestCase):
@@ -33,6 +33,31 @@ class CleanerTests(unittest.TestCase):
 
     def test_drop_empty_columns_empty_input(self):
         self.assertEqual(drop_empty_columns([]), [])
+
+    def test_fill_missing_pads_ragged_rows(self):
+        rows = [["a"], ["b", "c"], ["d", "e", "f"]]
+        self.assertEqual(
+            fill_missing(rows),
+            [["a", "", ""], ["b", "c", ""], ["d", "e", "f"]],
+        )
+
+    def test_fill_missing_leaves_even_rows_unchanged(self):
+        rows = [["a", "b"], ["c", "d"]]
+        self.assertEqual(fill_missing(rows), rows)
+
+    def test_fill_missing_empty_input(self):
+        self.assertEqual(fill_missing([]), [])
+
+    def test_fill_missing_custom_value(self):
+        rows = [["a"], ["b", "c"]]
+        self.assertEqual(fill_missing(rows, value="N/A"), [["a", "N/A"], ["b", "c"]])
+
+    def test_fill_missing_does_not_truncate_long_rows(self):
+        rows = [["a"], ["b", "c", "d"]]
+        self.assertEqual(
+            fill_missing(rows),
+            [["a", "", ""], ["b", "c", "d"]],
+        )
 
     def test_select_columns_reorders(self):
         rows = [["name", "score", "city"], ["ada", "10", "London"]]
