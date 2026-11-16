@@ -33,6 +33,36 @@ def dedupe(rows, key=None):
     return result
 
 
+def drop_empty_columns(rows):
+    if not rows:
+        return []
+    width = max(len(row) for row in rows)
+    keep = [
+        index
+        for index in range(width)
+        if any(index < len(row) and str(row[index]).strip() for row in rows)
+    ]
+    return [
+        [row[index] if index < len(row) else "" for index in keep]
+        for row in rows
+    ]
+
+
+def select_columns(rows, columns):
+    if not rows:
+        return []
+    header = list(rows[0])
+    indices = []
+    for name in columns:
+        if name not in header:
+            raise ValueError(f"unknown column: {name}")
+        indices.append(header.index(name))
+    return [
+        [row[index] if index < len(row) else "" for index in indices]
+        for row in rows
+    ]
+
+
 def load_rows(path, delimiter=","):
     with open(path, newline="", encoding="utf-8") as handle:
         return list(csv.reader(handle, delimiter=delimiter))
