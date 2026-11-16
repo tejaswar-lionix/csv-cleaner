@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from cleaner import clean_rows, dedupe, load_rows, normalize_headers, write_rows
+from cleaner import clean_rows, dedupe, drop_empty_columns, load_rows, normalize_headers, select_columns, write_rows
 
 
 class CleanerTests(unittest.TestCase):
@@ -23,6 +23,28 @@ class CleanerTests(unittest.TestCase):
     def test_dedupe_by_key(self):
         rows = [["a", "1"], ["a", "2"], ["b", "3"]]
         self.assertEqual(dedupe(rows, key=0), [["a", "1"], ["b", "3"]])
+
+    def test_drop_empty_columns(self):
+        rows = [["name", "", "score"], ["ada", "", "10"], ["grace", "", "9"]]
+        self.assertEqual(
+            drop_empty_columns(rows),
+            [["name", "score"], ["ada", "10"], ["grace", "9"]],
+        )
+
+    def test_drop_empty_columns_empty_input(self):
+        self.assertEqual(drop_empty_columns([]), [])
+
+    def test_select_columns_reorders(self):
+        rows = [["name", "score", "city"], ["ada", "10", "London"]]
+        self.assertEqual(
+            select_columns(rows, ["city", "name"]),
+            [["city", "name"], ["London", "ada"]],
+        )
+
+    def test_select_columns_missing_raises(self):
+        rows = [["name", "score"], ["ada", "10"]]
+        with self.assertRaises(ValueError):
+            select_columns(rows, ["name", "age"])
 
     def test_roundtrip(self):
         with tempfile.TemporaryDirectory() as directory:
