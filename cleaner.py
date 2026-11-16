@@ -48,6 +48,16 @@ def drop_empty_columns(rows):
     ]
 
 
+def fill_missing(rows, value=""):
+    if not rows:
+        return []
+    width = max(len(row) for row in rows)
+    return [
+        list(row) + [value] * (width - len(row))
+        for row in rows
+    ]
+
+
 def select_columns(rows, columns):
     if not rows:
         return []
