@@ -58,5 +58,63 @@ class CleanFileTests(unittest.TestCase):
             )
 
 
+class DelimiterTests(unittest.TestCase):
+    def test_roundtrip_with_semicolon(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "data.csv")
+            write_rows(path, [["name", "score"], ["ada", "10"]], delimiter=";")
+            self.assertEqual(
+                load_rows(path, delimiter=";"),
+                [["name", "score"], ["ada", "10"]],
+            )
+
+    def test_clean_file_semicolon_input_and_output(self):
+        from cleaner import clean_file
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "raw.csv")
+            destination = os.path.join(directory, "clean.csv")
+            write_rows(
+                source,
+                [
+                    [" Name ", " Score "],
+                    ["ada", "10"],
+                    ["ada", "10"],
+                    [" ", " "],
+                    ["grace", "9"],
+                ],
+                delimiter=";",
+            )
+            stats = clean_file(source, destination, delimiter=";")
+            self.assertEqual(stats["headers"], ["name", "score"])
+            self.assertEqual(stats["rows_before"], 4)
+            self.assertEqual(stats["rows_after"], 2)
+            self.assertEqual(stats["duplicates_removed"], 1)
+            self.assertEqual(
+                load_rows(destination, delimiter=";"),
+                [["name", "score"], ["ada", "10"], ["grace", "9"]],
+            )
+
+    def test_clean_file_reads_semicolon_and_writes_comma(self):
+        from cleaner import clean_file
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = os.path.join(directory, "raw.csv")
+            destination = os.path.join(directory, "clean.csv")
+            write_rows(
+                source,
+                [["Name", "Score"], ["ada", "10"], ["ada", "10"]],
+                delimiter=";",
+            )
+            stats = clean_file(
+                source, destination, delimiter=";", out_delimiter=","
+            )
+            self.assertEqual(stats["duplicates_removed"], 1)
+            self.assertEqual(
+                load_rows(destination),
+                [["name", "score"], ["ada", "10"]],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
