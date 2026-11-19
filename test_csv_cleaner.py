@@ -195,5 +195,26 @@ class DelimiterTests(unittest.TestCase):
             )
 
 
+class RenameColumnsTests(unittest.TestCase):
+    def test_renames_known_columns(self):
+        from cleaner import rename_columns
+
+        rows = [["name", "score"], ["ada", "10"]]
+        self.assertEqual(
+            rename_columns(rows, {"score": "points"}),
+            [["name", "points"], ["ada", "10"]],
+        )
+
+    def test_unknown_columns_untouched(self):
+        from cleaner import rename_columns
+
+        self.assertEqual(rename_columns([["a", "b"]], {}), [["a", "b"]])
+
+    def test_empty_rows(self):
+        from cleaner import rename_columns
+
+        self.assertEqual(rename_columns([], {"a": "b"}), [])
+
+
 if __name__ == "__main__":
     unittest.main()
