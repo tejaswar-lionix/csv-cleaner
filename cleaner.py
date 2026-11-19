@@ -121,3 +121,11 @@ def clean_file(source, destination, delimiter=",", out_delimiter=None):
         "rows_after": len(unique),
         "duplicates_removed": len(body) - len(unique),
     }
+
+
+def rename_columns(rows, mapping):
+    """Rename header cells using a mapping, leaving unknown columns intact."""
+    if not rows:
+        return []
+    header = [mapping.get(name, name) for name in rows[0]]
+    return [header] + [list(row) for row in rows[1:]]

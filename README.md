@@ -29,6 +29,10 @@ python3 -c "from cleaner import sort_rows; print(sort_rows([['name', 'score'], [
 python3 -m unittest -q
 ```
 
+## Additional API
+
+- `rename_columns(rows, mapping)` renames header cells using a mapping and leaves unknown columns intact.
+
 ## License
 
 MIT
