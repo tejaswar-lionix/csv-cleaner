@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 
-from cleaner import clean_rows, dedupe, drop_empty_columns, fill_missing, load_rows, normalize_headers, select_columns, write_rows
+from cleaner import clean_rows, dedupe, drop_empty_columns, fill_missing, load_rows, normalize_headers, select_columns, sort_rows, write_rows
 
 
 class CleanerTests(unittest.TestCase):
@@ -76,6 +76,38 @@ class CleanerTests(unittest.TestCase):
             path = os.path.join(directory, "data.csv")
             write_rows(path, [["name", "score"], ["ada", "10"]])
             self.assertEqual(load_rows(path), [["name", "score"], ["ada", "10"]])
+
+
+class SortRowsTests(unittest.TestCase):
+    def setUp(self):
+        self.rows = [
+            ["name", "score"],
+            ["grace", "9"],
+            ["ada", "10"],
+        ]
+
+    def test_sorts_body_by_column(self):
+        self.assertEqual(
+            sort_rows(self.rows, "score"),
+            [["name", "score"], ["ada", "10"], ["grace", "9"]],
+        )
+
+    def test_header_preserved(self):
+        rows = [["name", "score"], ["grace", "9"], ["ada", "10"]]
+        self.assertEqual(sort_rows(rows, "name")[0], ["name", "score"])
+
+    def test_reverse(self):
+        self.assertEqual(
+            sort_rows(self.rows, "score", reverse=True),
+            [["name", "score"], ["grace", "9"], ["ada", "10"]],
+        )
+
+    def test_missing_column_raises(self):
+        with self.assertRaises(ValueError):
+            sort_rows(self.rows, "age")
+
+    def test_empty_rows(self):
+        self.assertEqual(sort_rows([], "score"), [])
 
 
 class CleanFileTests(unittest.TestCase):

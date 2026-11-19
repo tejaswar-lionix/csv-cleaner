@@ -73,6 +73,21 @@ def select_columns(rows, columns):
     ]
 
 
+def sort_rows(rows, column, reverse=False):
+    if not rows:
+        return []
+    header = list(rows[0])
+    if column not in header:
+        raise ValueError(f"unknown column: {column}")
+    index = header.index(column)
+    body = [list(row) for row in rows[1:]]
+    body.sort(
+        key=lambda row: row[index] if index < len(row) else "",
+        reverse=reverse,
+    )
+    return [header] + body
+
+
 def load_rows(path, delimiter=","):
     with open(path, newline="", encoding="utf-8") as handle:
         return list(csv.reader(handle, delimiter=delimiter))
